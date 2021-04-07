@@ -1,5 +1,7 @@
 const express = require('express')
 const list = require('../models/Lists')
+const country = require('../models/Countries')
+
 const router = express.Router();
 
 
@@ -170,11 +172,59 @@ const router = express.Router();
 
 
 router.get('/:country', async (req, res) => {
+    const PAGE_SIZE = 5
+    const page = (parseInt(req.query.page) || 0)
+    console.log(req.query, 'PAGE')
+    const total = await list.countDocuments({})
+    try {
+        const posts = await list
+            .find({ 'address.country_code': req.params.country },
+                { name: 1, address: 1, images: 1, price: 1, description: 1, bedrooms: 1 })
+            .limit(PAGE_SIZE)
+            .skip(PAGE_SIZE * page)
+        // res.send(posts)
+        res.json({
+            totalPages: Math.ceil(total / PAGE_SIZE),
+            posts
+        })
+
+    } catch (err) {
+        console.log(err)
+    }
+})
+
+
+/**
+ * @swagger
+ * /country/allCodes:
+ *   get:
+ *     summary: Get the Airbnb Countries
+ *     tags: [Country]
+ *     responses:
+ *       200:
+ *         description: The airbnb property description by id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/List'
+ *       404:
+ *         description: The airbnb property was not found
+ */
+
+/**
+  * @swagger
+  * tags:
+  *   name: Country
+  *   description: The Airbnb property list managing API
+  */
+
+router.get('/allCodes', async (req, res) => {
+    console.log('DSSTSTSDTT')
     try {
         const what = await list
-            .find({ 'address.country_code': req.params.country })
+            .find()
             .limit(1)
-            .select('property_type')
+        // // .select('property_type')
         res.send(what)
 
     } catch (err) {

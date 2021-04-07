@@ -163,7 +163,8 @@ router.get('/', async (req, res) => {
     try {
         const listsRes = await list.find().limit(10)
         console.log(listsRes, 'LISTS')
-        res.send(listsRes)
+
+        // res.send(listsRes)
         res.json(listsRes)
 
     } catch (err) {
@@ -206,6 +207,7 @@ router.get('/:id', async (req, res) => {
         console.log(err)
     }
 })
+
 
 
 module.exports = router

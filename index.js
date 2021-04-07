@@ -41,12 +41,18 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs))
 app.get('/', (req, res) => {
     res.send('YO NIGGA')
 })
+
 const listRoute = require('./routes/lists.js')
 const countryRoute = require('./routes/country.js');
+const countryCodeRoute = require('./routes/codes.js')
+
 const Users = require('./models/user');
 
 app.use('/lists', listRoute)
 app.use('/country', countryRoute)
+app.use('/countryCodes', countryCodeRoute)
+
+
 
 app.post('/register', async (req, res) => {
     let userData = req.body;
