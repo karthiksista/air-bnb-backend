@@ -172,16 +172,19 @@ const router = express.Router();
 
 
 router.get('/:country', async (req, res) => {
-    const PAGE_SIZE = 5
+    const PAGE_SIZE = 10
     const page = (parseInt(req.query.page) || 0)
-    console.log(req.query, 'PAGE')
-    const total = await list.countDocuments({})
+    const sort = req.query.sort === 'desc' ? { price: -1 } : { price: 1 }
+    console.log(req.query, 'PAGE') //bedrooms:1
+    const total = await list.countDocuments({ 'address.country_code': req.params.country, 'bedrooms': req.query.roomtype || 1 })
     try {
         const posts = await list
-            .find({ 'address.country_code': req.params.country },
-                { name: 1, address: 1, images: 1, price: 1, description: 1, bedrooms: 1 })
+            .find({ 'address.country_code': req.params.country, 'bedrooms': req.query.roomtype || 1 },
+                { name: 1, address: 1, images: 1, price: 1, description: 1, bedrooms: 1, guests_included: 1, beds: 1, bathrooms: 1, number_of_reviews: 1 })
             .limit(PAGE_SIZE)
             .skip(PAGE_SIZE * page)
+            .sort(sort)
+        // console.log(posts, '@@@')
         // res.send(posts)
         res.json({
             totalPages: Math.ceil(total / PAGE_SIZE),
