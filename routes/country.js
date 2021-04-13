@@ -3,8 +3,9 @@ const list = require('../models/Lists')
 const country = require('../models/Countries')
 
 const router = express.Router();
+const houseRouter = express.Router({ mergeParams: true });
 
-
+router.use('/:id', houseRouter);
 /**
  * @swagger
  * components:
@@ -12,70 +13,70 @@ const router = express.Router();
  *     Country:
  *       type: object
  *       properties:
- *          _id: 
+ *          _id:
  *            type: string
- *            description: Unique Id 
- *          listing_url: 
+ *            description: Unique Id
+ *          listing_url:
  *            type: string
  *            description: Url for the house
- *          name: 
+ *          name:
  *            type: string
  *            description: Name of the property
- *          summary: 
+ *          summary:
  *            type: string
  *            description: A brief Summary
- *          space: 
+ *          space:
  *            type: string
  *            description: Area Details
- *          description: 
+ *          description:
  *            type: string
  *            description: Description of the property
- *          neighborhood_overview: 
+ *          neighborhood_overview:
  *            type: string
  *            description: Details of the neighnborhood
- *          notes: 
+ *          notes:
  *            type: string
  *            description: Notes
- *          transit: 
+ *          transit:
  *            type:  string
  *            description: Transit Details
- *          access: 
+ *          access:
  *            type: string
  *            description: Access Details
- *          interaction: 
+ *          interaction:
  *            type: string
  *            description: Interaction Details
- *          house_rules: 
+ *          house_rules:
  *            type: string
  *            description: Rules by the oowner
- *          property_type: 
+ *          property_type:
  *            type: string
  *            description: Total cost of the prop
- *          room_type: 
+ *          room_type:
  *            type: string
  *            description: Types of rooms
- *          bed_type: 
+ *          bed_type:
  *            type: string
  *            description: Types of bed
- *          minimum_nights: 
+ *          minimum_nights:
  *            type: string
  *            description: Valid stay of nights
- *          maximum_nights: 
+ *          maximum_nights:
  *            type: string
  *            description: Valid stay of nights max
- *          cancellation_policy: 
+ *          cancellation_policy:
  *            type: string
  *            description: pilicy for cancellation
- *          last_scraped: 
+ *          last_scraped:
  *            type: date
  *            description: last scraped date
- *          first_review: 
+ *          first_review:
  *            type: date
  *            description: Date of first review
- *          last_review: 
+ *          last_review:
  *            type: string
  *            description: Date of last review
- *          accommodates: 
+ *          accommodates:
  *            type: number
  *            description: No of acoomodates
  *          bedrooms:
@@ -90,7 +91,7 @@ const router = express.Router();
  *          bathrooms:
  *            type: number
  *            description: No of bathrooms
- *          amenities: 
+ *          amenities:
  *            type: array
  *            description: No of amenities
  *          price:
@@ -114,26 +115,26 @@ const router = express.Router();
  *          guests_included:
  *            type: Number
  *            description: Guests Included
- *          images: 
+ *          images:
  *            type: Object
- *            description: Images 
- *          host: 
+ *            description: Images
+ *          host:
  *            type: Object
  *            description: Hosts
- *          address: 
+ *          address:
  *            type: Object
  *            description: Address
- *          availability: 
+ *          availability:
  *            type: Object
  *            description: Availability Status
- *          review_scores: 
+ *          review_scores:
  *            type: Object
  *            description: Reviews Scores
- *          reviews: 
+ *          reviews:
  *            type: Object
  *            description: Reviews
  *       example:
- *               
+ *
  */
 /**
   * @swagger
@@ -175,11 +176,32 @@ router.get('/:country', async (req, res) => {
     const PAGE_SIZE = 10
     const page = (parseInt(req.query.page) || 0)
     const sort = req.query.sort === 'desc' ? { price: -1 } : { price: 1 }
-    console.log(req.query, 'PAGE') //bedrooms:1
-    const total = await list.countDocuments({ 'address.country_code': req.params.country, 'bedrooms': req.query.roomtype || 1 })
+    console.log(req.query, 'PARAms')
+
+    const total = await list.countDocuments({
+        'address.country_code': req.params.country, 'bedrooms': { $gte: Number(req.query.bedrooms) },
+        'beds': { $gte: Number(req.query.beds) },
+        'guests_included': { $gte: Number(req.query.guests) },
+        'bathrooms': { $gte: Number(req.query.bathrooms) }
+    })
+    console.log(total, 'TOTAL')
+    // return
+
+    // const posts = await list
+    //     .find({ 'address.country_code': CA, 'bedrooms': { $gte: 2 } }, { name: 1, address: 1, price: 1, bedrooms: 1, guests_included: 1, beds: 1, bathrooms: 1 }).limit(10)
+    //     .skip(PAGE_SIZE * page)
+    //     .sort(sort)
+
+    // return
     try {
+
         const posts = await list
-            .find({ 'address.country_code': req.params.country, 'bedrooms': req.query.roomtype || 1 },
+            .find({
+                'address.country_code': req.params.country, 'bedrooms': { $gte: Number(req.query.bedrooms) },
+                'beds': { $gte: Number(req.query.beds) },
+                'guests_included': { $gte: Number(req.query.guests) },
+                'bathrooms': { $gte: Number(req.query.bathrooms) }
+            },
                 { name: 1, address: 1, images: 1, price: 1, description: 1, bedrooms: 1, guests_included: 1, beds: 1, bathrooms: 1, number_of_reviews: 1 })
             .limit(PAGE_SIZE)
             .skip(PAGE_SIZE * page)
@@ -196,6 +218,17 @@ router.get('/:country', async (req, res) => {
     }
 })
 
+houseRouter.get('/:id', async (req, res) => {
+    console.log(req.params.id, 'ID')
+    try {
+        const details = await list.findById(req.params.id)
+        res.json({
+            details
+        })
+    } catch (err) {
+        console.log(err, 'error')
+    }
+})
 
 /**
  * @swagger
