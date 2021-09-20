@@ -39,7 +39,7 @@ const specs = swaggerJsDoc(options)
 
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs))
 app.get('/', (req, res) => {
-    res.send('YO NIGGA')
+    res.send('YO')
 })
 
 const listRoute = require('./routes/lists.js')
